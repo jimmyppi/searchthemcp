@@ -1,0 +1,14 @@
+.figrow td {
+  border-left: thin solid Lavender;
+  border-right: thin solid Lavender;
+  border-bottom: thin solid Lavender;
+}
+
+.comic_title_row td {
+  background-color: white;
+  border-bottom: medium solid Lavender;
+}
+
+.color_row {
+  background-color: Lavender;
+}
