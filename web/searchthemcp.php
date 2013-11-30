@@ -72,13 +72,19 @@ if (window != top) top.location.href = location.href;
 <p>
 <a href="http://www.chronologyproject.com/2099.php"><font color="#ffcc00">2099</font></a>
 <p>
+<a href="http://www.chronologyproject.com/mc2.php"><font color="#ffcc00">MC-2</font></a>
+<p>
 <a href="http://www.chronologyproject.com/ultimate.php"><font color="#ffcc00">Ultimate Universe</font></a>
 <p>
 <a href="http://www.chronologyproject.com/aoa.php"><font color="#ffcc00">Age of Apocalypse</font></a>
 <p>
 <a href="http://www.chronologyproject.com/heroesreborn.php"><font color="#ffcc00">Heroes Reborn</font></a>
 <p>
-<a href="http://www.chronologyproject.com/calendar1.php"><font color="#ffcc00">The Marvel Calendar</font></a>
+<a href="http://www.chronologyproject.com/earthx.php"><font color="#ffcc00">Earth X</font></a>
+<p>
+<a href="http://www.chronologyproject.com/mutantx.php"><font color="#ffcc00">Mutant X</font></a>
+<p>
+<a href="http://www.chronologyproject.com/calendar.php"><font color="#ffcc00">The Marvel Calendar</font></a>
 <p>
 <a href="http://www.chronologyproject.com/key.php"><font color="#ffcc00">Key</font></a>
 <p>
@@ -86,7 +92,7 @@ if (window != top) top.location.href = location.href;
 <p>
 <a href="http://www.chronologyproject.com/mcpedit.php"><font color="#ffcc00">What's New</font></a>
 <p>
-<a href="http://www.chronologyproject.com/phpbb2/"><font color="#ffcc00">Forum</font></a></font>
+<a href="http://www.chronologyproject.com/phpbb2/"><font color="#ffcc00">Forum</font></a>
 <p>
 <a href="http://www.chronologygraph.com/searchthemcp.php"><font color="#ffcc00">SEARCH THE MCP</font></a>
 <p>
@@ -103,10 +109,6 @@ if (window != top) top.location.href = location.href;
 
 <hr>
 <a href="http://www.chronologyproject.com/index.htm"><img src="uparr.gif" alt="[Home]"></a> <a href="http://www.chronologyproject.com/key.php"><img src="key.gif" alt="[Key]"></a>
-<hr>
-
-<h2><font color="red">ALERT TO INDEX WRITERS!</font></h2>
-<b><font color="red">The search was updated April 3, 2011.</font></b>
 <hr>
 
 Search for characters:
