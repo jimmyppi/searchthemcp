@@ -23,7 +23,7 @@ MCPFILESDIR = os.path.join(DATADIR, 'mcp')
 class Anomalies(dict):
    """Extension of dict for storing and printing of anomalies in the mcp files"""
 
-   def add(self, abbr, fig_name, comicstr, reason, file_name):
+   def add(self, abbr, fig_name, fig_file, snippet, comicstr, reason):
       """
       Add an anomaly to the dict
 
@@ -35,9 +35,11 @@ class Anomalies(dict):
       if not abbr in self:
          self[abbr] = dict()
       if not comicstr in self[abbr]:
-         self[abbr][comicstr] = {'reason':reason, 'figures': []}
-      if not fig_name in self[abbr][comicstr]['figures']:
-         self[abbr][comicstr]['figures'].append(fig_name)
+         self[abbr][comicstr] = {'reason':reason, 'figures': {}}
+      if not (fig_name, fig_file) in self[abbr][comicstr]['figures']:
+         self[abbr][comicstr]['figures'][(fig_name, fig_file)] = [snippet]
+      else:
+         self[abbr][comicstr]['figures'][(fig_name, fig_file)].append(snippet)
          
    def __str__(self):
       """Return a pretty string of the anomalies"""
@@ -45,7 +47,7 @@ class Anomalies(dict):
       abbrs.sort()
       b = StringIO()
       def write(s=''):
-         b.write('%s\n' % s)
+         b.write('%s\n' % (s if s else repr(s)))
       for abbr in abbrs:
          anom = self[abbr]
          write(abbr)
@@ -53,7 +55,10 @@ class Anomalies(dict):
          for comic,d in anom.items():
             write(comic)
             write(d['reason'])
-            write('\n'.join(d['figures']))
+            for (fig_name, fig_file), snippets in d['figures'].iteritems():
+               write('%s (%s)' % (fig_name, fig_file))
+               for snippet in snippets:
+                  write('\t...%s...' % snippet.replace('\n', ' ').replace('\r', ''))
             write('--------------')
          write('==============')
          write('\n')
@@ -163,7 +168,7 @@ class MCPFilesParser:
             f['race'] = ''
          else:
             f['race'] = m.group('race')
-         fig_search = self._cleanAndCollectComics(i, f['chronolist'], comics, anomalies, f['name'], verbose)
+         fig_search = self._cleanAndCollectComics(i, f['chronolist'], comics, anomalies, f['name'], f['file'], verbose)
          f['id'] = i
          f['search'] = fig_search
       return figures, comics, anomalies
@@ -253,9 +258,9 @@ class MCPFilesParser:
                raise ParseError('No chronological list found in %s' % f)
             body = m_body.group('body')
             fig_list = self.re_find_figures.search(body).group('figure')
-            return fig_list, thelink
+            return fig_list, thelink, f
             
-      return None,None
+      return None,None,None
          
    def _getFiguresListsOldSyntax(self, files, verbose=False):
       """
@@ -272,7 +277,7 @@ class MCPFilesParser:
       
       #files = [{'c.htm':'wsdtg'}]
       for f,dim in files:
-         
+
          if verbose:
             print 'Parsing file %r' % f
          content = self._readFile(f)
@@ -293,6 +298,7 @@ class MCPFilesParser:
          
          # Separate figures
          for m in self.re_find_figures.finditer(body):
+            fig_file = f
             fig_list = m.group('figure')
             thelink = ''
             if fig_list.lower().find('<br>') == -1:# False hit (\n\n\n<hr> for example)
@@ -301,10 +307,11 @@ class MCPFilesParser:
             first_row = fig_list[:fig_list.lower().find('<br>')]
             
             # Search single figure files
-            single_fig_list,single_link = self._getSingleFigureFileList(first_row, verbose)
+            single_fig_list, single_link, single_file = self._getSingleFigureFileList(first_row, verbose)
             if single_fig_list:
                fig_list = single_fig_list
                thelink = single_link
+               fig_file = single_file
             
             # Fix some details
             if first_row.lower().find('<b>') == -1:
@@ -321,7 +328,7 @@ class MCPFilesParser:
                   if verbose:
                      print 'Link name:', m.group('link_name'), [first_row]
             
-            figures.append({'chronolist': fig_list, 'dimension': dim, 'link': thelink, 'file': f})
+            figures.append({'chronolist': fig_list, 'dimension': dim, 'link': thelink, 'file': fig_file})
 
          if verbose:
             print 'Found %d figures in %r' % (len(figures) - nfigs, f)
@@ -390,9 +397,9 @@ class MCPFilesParser:
                   break
                   
                # Search single figure files
-               single_fig_list,single_link = self._getSingleFigureFileList(content[name_i], verbose)
+               single_fig_list, single_link, single_file = self._getSingleFigureFileList(content[name_i], verbose)
                if single_fig_list:
-                  figures.append({'chronolist':single_fig_list, 'dimension': dim, 'link': single_link})
+                  figures.append({'chronolist':single_fig_list, 'dimension': dim, 'link': single_link, 'file': single_file})
                   i += 1
                   continue
                      
@@ -437,7 +444,7 @@ class MCPFilesParser:
       figures.extend(self._getFiguresListsOldSyntax(old_syntax_files, verbose))
       return figures
          
-   def _anomalyDetector(self, comicstr, abbr, nr, fig_name, anomalies):
+   def _anomalyDetector(self, comicstr, abbr, nr, fig_name, fig_file, snippet, anomalies):
       """
       Check that the parser understand the syntax of the comic string and
       that the extracted abbreviation exist in the mcp key.
@@ -445,10 +452,10 @@ class MCPFilesParser:
       abbr_chars = 'A-Z@ \-\:&/\?\.'
       nr_chars = "\d/'\-\."
       if re.search(r"[^%s%s]" % (abbr_chars,nr_chars), comicstr):
-         anomalies.add(abbr, fig_name, comicstr, 'Unexpected character')
+         anomalies.add(abbr, fig_name, fig_file, snippet, comicstr, 'Unexpected character')
          return
       if not abbr in self.abbrs:
-         anomalies.add(abbr, fig_name, comicstr, 'Unknown abbreviation')
+         anomalies.add(abbr, fig_name, fig_file, snippet, comicstr, 'Unknown abbreviation')
          
    def _getFullComicName(self, abbr, nr, isAnnual):
       """
@@ -463,7 +470,7 @@ class MCPFilesParser:
       else:
          return fname
             
-   def _cleanAndCollectComics(self, fig_index, fig_list, comic_dict, anomalies, fig_name, verbose=False):
+   def _cleanAndCollectComics(self, fig_index, fig_list, comic_dict, anomalies, fig_name, fig_file, verbose=False):
       """
       Collect comics from a figure's chronology list
 
@@ -584,6 +591,8 @@ class MCPFilesParser:
          current = dict(rawstr=rawstr, comics=[])
          if e:
             extra_search.append(e)
+
+         snippet = '<br>'.join(fig_list[max(0,i-1):i+2])
          
          for c in comics:
             if c:
@@ -597,7 +606,7 @@ class MCPFilesParser:
                   abbr = abbr[:annualmatch.start()]
                   isAnnual = True
                full_name = self._getFullComicName(abbr, nr, isAnnual)
-               self._anomalyDetector(thecomic, abbr, nr, fig_name, anomalies)
+               self._anomalyDetector(thecomic, abbr, nr, fig_name, fig_file, snippet, anomalies)
                addComic(thecomic, full_name)
                current['comics'].append(dict(comicstr=thecomic, appendix=theappendix, comicid=comic_dict[thecomic]['id']))
                addAppendix(thecomic, theappendix, fig_index, previous, rawstr, i, current)
