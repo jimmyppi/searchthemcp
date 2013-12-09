@@ -1,6 +1,7 @@
 # -*- coding: iso-8859-1 -*-
 """
-Provide the class MCPFilesParser for extracting data from the mcp files needed by the search.
+Provide the class MCPFilesParser for extracting data
+from the mcp files needed by the search.
 
 Usage
 -----
@@ -22,7 +23,7 @@ MCPFILESDIR = os.path.join(DATADIR, 'mcp')
 class Anomalies(dict):
    """Extension of dict for storing and printing of anomalies in the mcp files"""
 
-   def add(self, abbr, fig_name, comicstr, reason):
+   def add(self, abbr, fig_name, comicstr, reason, file_name):
       """
       Add an anomaly to the dict
 
@@ -103,6 +104,10 @@ class MCPFilesParser:
                     ('ultimate', 'Ultimate Universe'),
                     ('aoa', 'Age of Apocalypse'),
                     ('heroesreborn', 'Heroes Reborn'),
+                    ('mc2', 'MC-2'),
+                    ('earthx', 'Earth X'),
+                    ('mutantx', 'Mutant X'),
+                    ('exiles', 'Exiles'),
                     ]
                    
    KEYFILE = 'key'
@@ -316,7 +321,7 @@ class MCPFilesParser:
                   if verbose:
                      print 'Link name:', m.group('link_name'), [first_row]
             
-            figures.append({'chronolist': fig_list, 'dimension': dim, 'link': thelink})
+            figures.append({'chronolist': fig_list, 'dimension': dim, 'link': thelink, 'file': f})
 
          if verbose:
             print 'Found %d figures in %r' % (len(figures) - nfigs, f)
@@ -393,7 +398,7 @@ class MCPFilesParser:
                      
                fig_list = '\n'.join(content[name_i+1:i])
                
-               figures.append({'name': figname, 'chronolist': fig_list, 'dimension': dim, 'link': thelink})
+               figures.append({'name': figname, 'chronolist': fig_list, 'dimension': dim, 'link': thelink, 'file': f})
                i += 1
                
             elif first_found:
