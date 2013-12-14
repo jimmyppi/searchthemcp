@@ -114,6 +114,8 @@ class MCPFilesParser:
                     ('mutantx', 'Mutant X'),
                     ('exiles', 'Exiles'),
                     ]
+
+   OLD_SYNTAX_FILES = ['ultimate']
                    
    KEYFILE = 'key'
    FILEEND = '.php'
@@ -270,9 +272,9 @@ class MCPFilesParser:
       
       figures = []
       
-      #files = [{'c.htm':'wsdtg'}]
       for f,dim in files:
 
+         full_url = '%s%s.%s' % (self.BASEURL, f, self.FILEEND)
          if verbose:
             print 'Parsing file %r' % f
          content = self._readFile(f)
@@ -313,10 +315,10 @@ class MCPFilesParser:
                fig_list = '<b>'+fig_list
             if first_row.lower().find('</b>') == -1:
                fig_list = fig_list[:fig_list.lower().find('<br>')]+'</b>'+fig_list[fig_list.lower().find('<br>'):]
-            fig_list = fig_list.replace('<a href="#','<a href="%s%s#' % (self.BASEURL, f))
+            fig_list = fig_list.replace('<a href="#','<a href="%s#' % full_url)
             
             if not thelink:
-               thelink = self.BASEURL + f
+               thelink = full_url
                m = self.re_link_name.search(first_row)
                if m:
                   thelink += '#%s' % m.group('link_name')
@@ -348,6 +350,7 @@ class MCPFilesParser:
       
       for f,dim in files:
       
+         full_url = '%s%s.%s' % (self.BASEURL, f, self.FILEEND)
          # Read file
          if verbose:
             print 'Parsing file %r' % f
@@ -369,7 +372,7 @@ class MCPFilesParser:
                figname = self._clean(m.group('name'),False)
                name_i = i
                figid = m.group('id')
-               thelink = self.BASEURL + f
+               thelink = full_url
                if figid:
                   thelink += '#%s' % figid
                #if verbose:
@@ -430,10 +433,11 @@ class MCPFilesParser:
                      http://chronologyproject.com/spidey.php
                      ...
       """
+      all_files = [(f, 'standard') for f in self.MCPFILES] + self.MCPDIMENSIONS
       # Files with the expand/collapse functinality
-      new_syntax_files = [(f, 'standard') for f in self.MCPFILES]
+      new_syntax_files = [(f,n) for f,n in all_files if not f in self.OLD_SYNTAX_FILES]
       # Files without expand/collapse
-      old_syntax_files = self.MCPDIMENSIONS[:]
+      old_syntax_files = [(f,n) for f,n in all_files if f in self.OLD_SYNTAX_FILES]
    
       figures = self._getFiguresListsNewSyntax(new_syntax_files, verbose)
       figures.extend(self._getFiguresListsOldSyntax(old_syntax_files, verbose))
