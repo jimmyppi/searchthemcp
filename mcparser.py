@@ -135,11 +135,6 @@ class MCPFilesParser:
    figure_redirections = ["(~", "(See", "See", "(From","From", "Note", "Caution", "(may continue","may continue","between"]
    comic_appendixes = ["-FB", "-BTS", "-OP","-VO", "(", "pg", "Pg"]
    
-   re_appendix = r'(\([\d\-\: ]+\)|pg[pgn\- d]+|)(\-(FB|BTS|OP|VO))*'
-   
-   abbr_rex = r'( ?[A-Z]+[/\-&\:\.]?)+[@\d\.\?]?(?= |$)'
-   nr_rex = r"['-]?\d*[/\.]?\d+(?=$)"
-   
    re_abbr_nr = re.compile(r"^(?P<abbr>.+?) (?P<nr>['-]?[\.\d]*[A-B]?/?\d+[A-B]?(?=$))")
 
    def getFiguresAndComics(self, verbose=False):
