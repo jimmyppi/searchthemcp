@@ -600,7 +600,7 @@ class MCPFilesParser:
                   thecomic = 'CA 152' # Special fix for Scorpion II
                abbr, nr = self._getAbbreviationAndNumber(thecomic)
                isAnnual = False
-               annualmatch = re.search('@2?$', abbr)
+               annualmatch = re.search('@[2-9]?$', abbr)
                if annualmatch:
                   abbr = abbr[:annualmatch.start()]
                   isAnnual = True
