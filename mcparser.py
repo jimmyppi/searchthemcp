@@ -635,7 +635,15 @@ class MCPFilesParser:
       # Remove html tags
       cleanstr = self.re_tag.sub('',rawstr)
       
-      replacements = {"&lt;":"<", "&gt;":">", "&amp;":"&", "&quot;":'"', "&and;":"&", "&Ntilde;":"Ñ", '\n':'', '&hearts;':'HEART'}
+      replacements = {"&lt;":"<",
+                      "&gt;":">",
+                      "&amp;":"&",
+                      "&quot;":'"',
+                      "&and;":"&",
+                      "&Ntilde;":"Ñ",
+                      '\n':'',
+                      '&hearts;':'HEART', # TODO, unicode
+                      '&infin;': 'INFINITY'}
       
       # Replace html entities etc
       for torepl,repl in replacements.items():
