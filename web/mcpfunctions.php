@@ -3,7 +3,7 @@
 function openConnection() {
    $host = "localhost";
    $login= "YOUR_MYSQL_USERNAME";
-   $dbname = "chronologygraph";
+   $dbname = "THE_DATABASE_NAME";
    $password= "YOUR_MYSQL_PASSWORD";
    $db = mysql_connect($host,$login,$password) or errorManagement();
    mysql_select_db($dbname);
