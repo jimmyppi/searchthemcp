@@ -274,7 +274,7 @@ class MCPFilesParser:
       
       for f,dim in files:
 
-         full_url = '%s%s.%s' % (self.BASEURL, f, self.FILEEND)
+         full_url = '%s%s%s' % (self.BASEURL, f, self.FILEEND)
          if verbose:
             print 'Parsing file %r' % f
          content = self._readFile(f)
@@ -350,7 +350,7 @@ class MCPFilesParser:
       
       for f,dim in files:
       
-         full_url = '%s%s.%s' % (self.BASEURL, f, self.FILEEND)
+         full_url = '%s%s%s' % (self.BASEURL, f, self.FILEEND)
          # Read file
          if verbose:
             print 'Parsing file %r' % f
