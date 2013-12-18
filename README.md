@@ -3,7 +3,7 @@ Add search functionality to the Marvel Chronology Project.
 Getting started
 ---------------
 
-* You need a computer with python2.* to run the script that parses the files from www.chronologyproject.com and generates the database files.
+* You need a computer with Python2.* to run the script that parses the files from www.chronologyproject.com and generates the database files.
 * You also need a server with php and mysql.
 
 Set up the search
