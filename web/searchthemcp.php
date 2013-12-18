@@ -162,7 +162,7 @@ elseif($comic != NULL)
 ?>
 
 <hr>
-<P>Last updated <I>Sunday, April 3, 2011</I>.</P>
+<P>Last updated <I>Wednesday, December 18, 2013</I>.</P>
 <p>Note that the search does not get updated as often as the project.</p>
 
 <p><B>Search for characters functionality</B><br>
