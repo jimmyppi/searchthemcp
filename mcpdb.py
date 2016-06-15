@@ -58,7 +58,7 @@ class MCPDB:
       * chronolist  - The figure chronlogical list extracted from the mcp html files.
       """
       return ("CREATE TABLE IF NOT EXISTS %s (figid int, name varchar(256), race varchar(128), search_name text, "
-              "link varchar(128), dimension varchar(128), chronolist longtext, index (figid), index (name, search_name(512)), index (race))") % table_name
+              "link varchar(128), dimension varchar(128), chronolist longtext, index (figid), index (name, search_name(512)), index (race)) ENGINE = innodb") % table_name
    
    def _sqlCreateComicTable(self, table_name):
       """

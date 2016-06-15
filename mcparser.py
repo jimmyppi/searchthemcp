@@ -112,10 +112,16 @@ class MCPFilesParser:
                     ('mc2', 'MC-2'),
                     ('earthx', 'Earth X'),
                     ('mutantx', 'Mutant X'),
-                    ('exiles', 'Exiles'),
+                    ('alternate', 'Alternate Universes'),
+					('zombies', 'Marvel Zombies'),
+					('ultraverse', 'Ultraverse'),
+					('mini', 'Mini-Marvels'),
+					('hembeck','Hembeck Universe'),
+					('spiderham','Spider-Ham'),
                     ]
 
-   OLD_SYNTAX_FILES = ['ultimate']
+#   OLD_SYNTAX_FILES = ['ultimate']
+   OLD_SYNTAX_FILES = ['']
                    
    KEYFILE = 'key'
    FILEEND = '.php'
@@ -187,6 +193,16 @@ class MCPFilesParser:
          urlin.close()
          with open(os.path.join(MCPFILESDIR, f), 'w') as fileout:
             fileout.write(data)
+      """Remove extra expand-collapse coding from alternate universes file"""
+      altuniverse="c:/python27/data/mcp/alternate.php"
+      altuni = open(altuniverse,"r")
+      lines = altuni.readlines()
+      altuni.close()
+      altuni = open(altuniverse,"w")
+      for line in lines:
+         if line!="<p><hr></p>"+"\n" and line!="</span></div>"+"\n" and line[:8]!="<div id=":
+    	    altuni.write(line)
+      altuni.close()
          
    def _readFile(self, f):
       """Read mcp file with name @f from disk and return the contents"""
@@ -248,7 +264,8 @@ class MCPFilesParser:
          if name_line.find(n) != -1:
             if verbose:
                print 'Parsing single figure list %r' % f
-            thelink = self.BASEURL + f
+            #thelink = self.BASEURL + f
+            thelink = self.BASEURL + f + self.FILEEND# Replaces line above, see if this adds php to filename
             content = self._readFile(f)
             m_body = self.re_body_single_fig.search(content)
             if not m_body:

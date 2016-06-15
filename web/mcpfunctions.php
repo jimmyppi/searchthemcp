@@ -109,7 +109,7 @@ function publishComic($comic, $db) {
       }
 
       if( $color ) {
-      	echo "<TR ID=\"".$current_appendix."".$comicobj->figid."\" CLASS=\"color_row figrow\">";
+              echo "<TR ID=\"".$current_appendix."".$comicobj->figid."\" CLASS=\"color_row figrow\">";
       }
       else {
         echo "<TR ID=\"".$current_appendix."".$comicobj->figid."\" CLASS=\"figrow\">";
@@ -140,7 +140,7 @@ function publishComic($comic, $db) {
 
    }
    if(!$comicFound) {
-      echo "Could not find the comic.<BR>";
+      echo "<TABLE><TR><TD>Could not find the comic.</TD></TR>";
    }
    echo "</TABLE>";
 
