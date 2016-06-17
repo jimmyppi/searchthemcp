@@ -2,71 +2,75 @@
 
 function openConnection() {
    $host = "localhost";
-   $login= "YOUR_MYSQL_USERNAME";
+   $login = "YOUR_MYSQL_USERNAME";
    $dbname = "THE_DATABASE_NAME";
-   $password= "YOUR_MYSQL_PASSWORD";
-   $db = mysql_connect($host,$login,$password) or errorManagement();
-   mysql_select_db($dbname);
+   $password = "YOUR_MYSQL_PASSWORD";
+   $db = mysqli_connect($host, $login, $password, $dbname) or errorManagement();
    return $db;
 }
 
-function errorManagement($error = "") {
-   if (empty($error)) {
-      $mysqlError = mysql_error();
-      if (!empty($mysqlError)) {
-         echo "Error: ".$mysqlError;
+function errorManagement($db = "") {
+   if (!empty($db)) {
+      if ($db->connect_errno) {
+         echo "<p>Failed to connect to MySQL: ({$db->connect_errno}){$db->connect_error}</p>";
       }
    }
-   else
-      echo "Error: ".$error;
-   echo "<br><a href=\"javascript:history.go(-1)\">Back</a><br>";
-   exit;
+   echo "<p><a href=\"javascript:history.go(-1)\">Back</a><p>";
+   exit();
 }
 
 function searchForComic($comic) {
-   $db = openConnection() or errorManagement();
-   $sql = "SELECT * FROM mcp_comics WHERE abbreviation='".$comic."' ORDER BY appendix,figid,entry_index";
-   $result = mysql_query($sql,$db) or errorManagement();
+   $db = openConnection();
+   $comic = $db->real_escape_string($comic);
+   $sql = "SELECT * FROM mcp_comics WHERE abbreviation='{$comic}' ORDER BY appendix,figid,entry_index";
+   $result = $db->query($sql) or errorManagement($db);
    publishComic($result, $db);
-   mysql_free_result($result);
+   $result->close();
+   $db->close();
 }
 
 function searchForFigures($searchString) {
-   $db = openConnection() or errorManagement();
-   $sql = "SELECT name,link,dimension FROM mcp_figures WHERE search_name LIKE '%".$searchString."%' OR name LIKE '%".$searchString."%'";
-   $result = mysql_query($sql, $db) or errorManagement();
-   echo "Results for '$searchString':<P>";
-   while($figureobj = mysql_fetch_object($result)) {
+   $db = openConnection();
+   $searchString = $db->real_escape_string($searchString);
+   $sql = "SELECT name,link,dimension FROM mcp_figures WHERE search_name LIKE '%{$searchString}%' OR name LIKE '%{$searchString}%'";
+   $result = $db->query($sql) or errorManagement($db);
+   echo "<p>Results for '{$searchString}':</p>";
+   while($figureobj = $result->fetch_object()) {
       if($figureobj->dimension != "standard") {
-         echo "<A HREF=\"".$figureobj->link."\">".$figureobj->name." (".$figureobj->dimension.")</A><BR>";
+         echo "<a href=\"{$figureobj->link}\">{$figureobj->name} ({$figureobj->dimension})</a><br>";
       }
       else {
-         echo "<A HREF=\"".$figureobj->link."\">".$figureobj->name."</A><BR>";
+         echo "<a href=\"{$figureobj->link}\">{$figureobj->name}</a><br>";
       }
    }
-   mysql_free_result($result);
+   $result->close();
+   $db->close();
 }
 
 function getFigure($index) {
-   $db = openConnection() or errorManagement();
-   $sql = "SELECT * FROM figures3 WHERE ind IN (".$index.")";
-   $result = mysql_query($sql, $db) or errorManagement();
-   if($figureobj = mysql_fetch_object($result)) {
+   $db = openConnection();
+   $index = $db->real_escape_string($index);
+   $sql = "SELECT * FROM figures3 WHERE ind IN ({$index})";
+   $result = $db->query($sql) or errorManagement($db);
+   if($figureobj = $result->fetch_object()) {
       echo str_replace("\'", "\"", $figureobj->html);
-      echo str_replace("\'", "\"", $figureobj->list)."</b>";
+      echo str_replace("\'", "\"", "{$figureobj->list}</b>");
    }
    else
-      echo "Could not find the figure.<BR>";
-   echo "<P>";
-   mysql_free_result($result);
+      echo "Could not find the figure.<br>";
+   echo "<p>";
+   $result->close();
+   $db->close();
 }
 
 function getComic($index) {
-   $db = openConnection() or errorManagement();
-   $sql = "SELECT * FROM mcp_comics WHERE comicid='".$index."' ORDER BY appendix,figid,entry_index";
-   $result = mysql_query($sql,$db) or errorManagement();
+   $db = openConnection();
+   $index = $db->real_escape_string($index);
+   $sql = "SELECT * FROM mcp_comics WHERE comicid='{$index}' ORDER BY appendix,figid,entry_index";
+   $result = $db->query($sql) or errorManagement($db);
    publishComic($result, $db);
-   mysql_free_result($result);
+   $result->close();
+   $db->close();
 }
 
 function addLinksToRaw($comicobj, $rawstr, $comics, $linkCurrent) {
@@ -77,7 +81,7 @@ function addLinksToRaw($comicobj, $rawstr, $comics, $linkCurrent) {
    for ( $c = 0; $c < sizeof($comics); $c += 1) {
       $ca = split("\\|", $comics[$c]);
       if (!($ca[0] == $comicobj->abbreviation && $ca[2] == $comicobj->appendix && ! $linkCurrent)) {
-         $linkstr = str_replace($ca[0], "<A HREF=\"?comic=".$ca[1]."#".$ca[2]."".$comicobj->figid."\">".$ca[0]."</a>", $linkstr);
+         $linkstr = str_replace($ca[0], "<a href=\"?comic={$ca[1]}#{$ca[2]}{$comicobj->figid}\">{$ca[0]}</a>", $linkstr);
       }
    }
    return $linkstr;
@@ -88,61 +92,63 @@ function publishComic($comic, $db) {
    $comicFound = false;
    $current_appendix = -1;
    $color = false;
-   while($comicobj = mysql_fetch_object($comic)) {
+   while($comicobj = $comic->fetch_object()) {
       if (!$comicFound) {
          $comicFound = true;
-         echo "<TABLE CLASS=\"comictable\" cellspacing=0 cellpadding=4><TR><TH></TH><TH>Previous</TH><TH COLSPAN=2>Current</TH><TH>Next</TH></TR>";
-         $sql = "SELECT full_name FROM mcp_comics_fullname WHERE comicid='".$comicobj->comicid."'";
-         $result = mysql_query($sql,$db) or errorManagement();
-         if($fullname = mysql_fetch_object($result)) {
-            echo "<B>".$fullname->full_name."</B>";
+         echo "<table class=\"comictable\" cellspacing=0 cellpadding=4><tr><th></th><th>Previous</th><th colspan=2>Current</th><th>Next</th></tr>";
+         $comicid = $db->real_escape_string($comicobj->comicid);
+         $sql = "SELECT full_name FROM mcp_comics_fullname WHERE comicid='{$comicid}'";
+         $result = $db->query($sql) or errorManagement($db);
+         if($fullname = $result->fetch_object()) {
+            echo "<b>{$fullname->full_name}</b>";
          }
-         mysql_free_result($result);
+         $result->close();
       }
       if( $comicobj->appendix != $current_appendix ) {
          if ($current_appendix != -1) {
-             echo "<TR CLASS=\"space_row\"><TD COLSPAN=5>&nbsp;</TD></TR>";
+             echo "<tr class=\"space_row\"><td colspan=5>&nbsp;</td></tr>";
          }
          $current_appendix = $comicobj->appendix;
          $color = false;
-         echo "<TR ID=\"".$current_appendix."\" CLASS=\"comic_title_row\"><TD><B>".$comicobj->abbreviation." ".$comicobj->appendix."</B></TD><TD COLSPAN=4>&nbsp;</TD></TR>";
+         echo "<tr id=\"{$current_appendix}\" class=\"comic_title_row\"><td><b>{$comicobj->abbreviation} {$comicobj->appendix}</b></td><td colspan=4>&nbsp;</td></tr>";
       }
 
       if( $color ) {
-              echo "<TR ID=\"".$current_appendix."".$comicobj->figid."\" CLASS=\"color_row figrow\">";
+              echo "<tr id=\"{$current_appendix}{$comicobj->figid}\" class=\"color_row figrow\">";
       }
       else {
-        echo "<TR ID=\"".$current_appendix."".$comicobj->figid."\" CLASS=\"figrow\">";
+        echo "<tr id=\"{$current_appendix}{$comicobj->figid}\" class=\"figrow\">";
       }
-
-      $sql = "SELECT name,link,dimension FROM mcp_figures WHERE figid='".$comicobj->figid."'";
-      $figresult = mysql_query($sql,$db) or errorManagement();
-      if($figureobj = mysql_fetch_object($figresult)) {
+      $figid = $db->real_escape_string($comicobj->figid);
+      $sql = "SELECT name,link,dimension FROM mcp_figures WHERE figid='{$figid}'";
+      $figresult = $db->query($sql) or errorManagement($db);
+      if($figureobj = $figresult->fetch_object()) {
          if($figureobj->dimension != "standard") {
-            echo "<TD><A HREF=\"".$figureobj->link."\">".$figureobj->name." (".$figureobj->dimension.")</A></TD>";
+            echo "<td><a href=\"{$figureobj->link}\">{$figureobj->name} ({$figureobj->dimension})</a></td>";
          }
          else {
-            echo "<TD><A HREF=\"".$figureobj->link."\">".$figureobj->name."</A></TD>";
+            echo "<td><a href=\"{$figureobj->link}\">{$figureobj->name}</a></td>";
          }
       }
-      mysql_free_result($figresult);
+      $figresult->close();
 
       $prev_str = addLinksToRaw($comicobj, $comicobj->previous_raw, split("#", $comicobj->previous_comics), true);
-      echo "<TD>".$prev_str."</TD>";
+      echo "<td>{$prev_str}</td>";
 
       $current_str = addLinksToRaw($comicobj, $comicobj->current_raw, split("#", $comicobj->current_comics), false);
-      echo "<TD ALIGN=\"right\">".($comicobj->entry_index+1)."</TD><TD>".$current_str."</TD>";
+	  $entryindplus = $comicobj->entry_index+1;
+	  echo "<td alight=\"right\">{$entryindplus}</td><td>{$current_str}</td>";
 
       $next_str = addLinksToRaw($comicobj, $comicobj->next_raw, split("#", $comicobj->next_comics), true);
-      echo "<TD>".$next_str."</TD>";
+      echo "<td>{$next_str}</td>";
 
       $color = !$color;
 
    }
    if(!$comicFound) {
-      echo "<TABLE><TR><TD>Could not find the comic.</TD></TR>";
+      echo "<table><tr><td>Could not find the comic.</td></tr>";
    }
-   echo "</TABLE>";
+   echo "</table>";
 
 }
 
