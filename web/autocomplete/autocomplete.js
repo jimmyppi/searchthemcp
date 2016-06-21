@@ -359,9 +359,13 @@
     */
     function AutoComplete_SetValue(id)
     {
-        __AutoComplete[id]['element'].value = __AutoComplete[id]['dropdown'].childNodes[__AutoComplete[id]['highlighted']].innerHTML;
+        function htmlDecode( html ) {
+           var a = document.createElement( 'a' ); a.innerHTML = html;
+           return a.textContent;
+        };
+        __AutoComplete[id]['element'].value = htmlDecode(__AutoComplete[id]['dropdown'].childNodes[__AutoComplete[id]['highlighted']].innerHTML);
     }
-    
+
     
     /**
     * Checks if the dropdown needs scrolling
